@@ -5,6 +5,7 @@ import WithdrawalScreen from './WithdrawalScreen';
 import AviatorGame from './AviatorGame';
 import MinesGame from './MinesGame';
 import AdminDashboard from './AdminDashboard';
+
 export default function App() {
   const [user, setUser] = useState(null);
   const [currentScreen, setCurrentScreen] = useState('lobby');
@@ -28,3 +29,6 @@ export default function App() {
         <button onClick={() => setCurrentScreen('admin')} style={{ background: '#FFD700', border: 'none', padding: '5px 10px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold' }}>Admin</button>
       </div>
     </div>
+  );
+  }
+                                                
