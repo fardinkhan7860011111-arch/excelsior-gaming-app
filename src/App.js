@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import LoginScreen from './LoginScreen';
 import GameLobby from './GameLobby';
 import DepositScreen from './DepositScreen';
 import WithdrawalScreen from './WithdrawalScreen';
@@ -13,10 +12,6 @@ export default function App() {
 
     // Agar user logged-in nahi hai, toh pehle Login screen dikhayenge
     if (!user) {
-        return <LoginScreen onLoginSuccess={(userData) => setUser(userData)} />;
-    }
-
-    return (
         <div>
             {currentScreen === 'lobby' && <GameLobby navigateTo={(screen) => setCurrentScreen(screen)} />}
             {currentScreen === 'deposit' && <DepositScreen />}
