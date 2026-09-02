@@ -1,0 +1,80 @@
+import React, { useState } from 'react';
+import axios from 'axios';
+
+export default function WithdrawalScreen() {
+    const [amount, setAmount] = useState('');
+    const [upiId, setUpiId] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const handleWithdraw = async (e) => {
+        e.preventDefault();
+        if (!amount || !upiId) {
+            alert("Amount aur UPI ID bharein!");
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const res = await axios.post('http://localhost:5000/api/withdrawal/submit', {
+                userId: "USER_123", // Isko aap apne logged-in user se connect kar denge
+                amount: Number(amount),
+                upiId: upiId
+            });
+
+            if (res.data.success) {
+                alert(res.data.message);
+                setAmount('');
+                setUpiId('');
+            }
+        } catch (err) {
+            alert(err.response?.data?.message || "Withdrawal request fail ho gayi!");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div style={{ backgroundColor: '#121212', color: '#FFD700', padding: '20px', minHeight: '100vh', fontFamily: 'sans-serif', maxWidth: '400px', margin: '0 auto' }}>
+            <h2 style={{ textAlign: 'center', marginBottom: '20px' }}>EXCELSIOR - Withdraw Funds</h2>
+
+            <div style={{ background: '#1c1c1c', border: '1px solid #FFD700', borderRadius: '10px', padding: '20px', marginBottom: '20px' }}>
+                <p style={{ fontSize: '14px', color: '#ccc', margin: '0 0 5px 0' }}>Available Balance</p>
+                <h3 style={{ margin: '0', fontSize: '24px', color: '#fff' }}>$12,450.00</h3>
+            </div>
+
+            <form onSubmit={handleWithdraw}>
+                <div style={{ marginBottom: '15px' }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Withdrawal Amount ($):</label>
+                    <input 
+                        type="number" 
+                        value={amount} 
+                        onChange={(e) => setAmount(e.target.value)} 
+                        placeholder="Enter amount"
+                        style={{ width: '100%', padding: '12px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '5px' }}
+                        required 
+                    />
+                </div>
+
+                <div style={{ marginBottom: '20px' }}>
+                    <label style={{ display: 'block', marginBottom: '5px', fontSize: '12px' }}>Your UPI ID (for payout):</label>
+                    <input 
+                        type="text" 
+                        value={upiId} 
+                        onChange={(e) => setUpiId(e.target.value)} 
+                        placeholder="e.g. yourname@okhdfcbank"
+                        style={{ width: '100%', padding: '12px', background: '#222', color: '#fff', border: '1px solid #444', borderRadius: '5px' }}
+                        required 
+                    />
+                </div>
+
+                <button 
+                    type="submit" 
+                    disabled={loading}
+                    style={{ width: '100%', padding: '14px', background: '#FFD700', color: '#000', fontWeight: 'bold', border: 'none', borderRadius: '5px', cursor: 'pointer' }}
+                >
+                    {loading ? "Processing..." : "REQUEST WITHDRAWAL"}
+                </button>
+            </form>
+        </div>
+    );
+}
