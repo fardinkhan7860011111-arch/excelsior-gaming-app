@@ -12,6 +12,7 @@ mongoose.connect('mongodb://localhost:27017/excelsior_gaming', {
 }).then(() => console.log("MongoDB Connected"))
   .catch(err => console.log("DB Error:", err));
 
+// Transaction / Deposit Schema
 const transactionSchema = new mongoose.Schema({
     userId: { type: String, required: true },
     amount: { type: Number, required: true },
@@ -19,9 +20,19 @@ const transactionSchema = new mongoose.Schema({
     status: { type: String, default: 'Pending' },
     createdAt: { type: Date, default: Date.now }
 });
-
 const Transaction = mongoose.model('Transaction', transactionSchema);
 
+// Withdrawal Schema
+const withdrawalSchema = new mongoose.Schema({
+    userId: { type: String, required: true },
+    amount: { type: Number, required: true },
+    upiId: { type: String, required: true },
+    status: { type: String, default: 'Pending' },
+    createdAt: { type: Date, default: Date.now }
+});
+const Withdrawal = mongoose.model('Withdrawal', withdrawalSchema);
+
+// Deposit Submit Route
 app.post('/api/deposit/submit', async (req, res) => {
     try {
         const { userId, amount, utrNumber } = req.body;
@@ -45,6 +56,56 @@ app.post('/api/deposit/submit', async (req, res) => {
         res.status(200).json({ success: true, message: "Deposit request successfully submit ho gayi hai!" });
     } catch (error) {
         res.status(500).json({ success: false, message: "Server error." });
+    }
+});
+
+// Withdrawal Submit Route
+app.post('/api/withdrawal/submit', async (req, res) => {
+    try {
+        const { userId, amount, upiId } = req.body;
+        if (!amount || !upiId) {
+            return res.status(400).json({ success: false, message: "Amount aur UPI ID zaroori hain!" });
+        }
+
+        const newWithdrawal = new Withdrawal({
+            userId: userId || "USER_123",
+            amount,
+            upiId,
+            status: 'Pending'
+        });
+
+        await newWithdrawal.save();
+        res.status(200).json({ success: true, message: "Withdrawal request successfully submit ho gayi hai!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Server error during withdrawal." });
+    }
+});
+
+// Admin Pending Deposits Fetch Route
+app.get('/api/admin/pending-deposits', async (req, res) => {
+    try {
+        const deposits = await Transaction.find({ status: 'Pending' });
+        res.status(200).json({ success: true, deposits });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Error fetching pending deposits." });
+    }
+});
+
+// Admin Approve Deposit Route
+app.post('/api/admin/approve', async (req, res) => {
+    try {
+        const { transactionId } = req.body;
+        const tx = await Transaction.findById(transactionId);
+        if (!tx) {
+            return res.status(404).json({ success: false, message: "Transaction nahi mili!" });
+        }
+
+        tx.status = 'Approved';
+        await tx.save();
+
+        res.status(200).json({ success: true, message: "Deposit approved successfully!" });
+    } catch (error) {
+        res.status(500).json({ success: false, message: "Approval error." });
     }
 });
 
